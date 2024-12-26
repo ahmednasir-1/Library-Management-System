@@ -1,34 +1,80 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 #define MAXBOOKS 100
 #define MAX_MEMBERS 50
 using namespace std;
 
 class Authentication
 {
-private:
-    string username;
-    string password;
+protected:
+    char username[30];
+    char password[30];
 
 public:
+    friend void readUsers(Authentication *pp[], int &userCount);
+    friend void saveUsers(Authentication *pp[], int userCount);
     void setPassword();
-    string getUserName();
-    string getPassWord();
+    string getUserName()
+    {
+        return username;
+    }
+    string getPassWord()
+    {
+        return password;
+    }
+    void saveToFile();
+    void readFromFile(string s1[3]);
 };
-string Authentication::getUserName(){
-     return username;
+void Authentication::saveToFile()
+{
+    ofstream outfile;
+    outfile.open("userDetails.txt", ios::out);
+    if (!outfile)
+    {
+        cout << "Error. File can't be opened. " << endl;
+    }
+
+    outfile << username << endl
+            << password << endl;
+    outfile.close();
 }
-string Authentication::getPassWord(){
-  return password;
+void Authentication::readFromFile(string s1[2])
+{
+    ifstream infile;
+    infile.open("userDetails.txt", ios::in);
+    if (!infile)
+    {
+        cout << "Error. File can't be opened. " << endl;
+    }
+    // // string arr[2];
+    // while (infile.good())
+    // {
+    //     for (int i = 0; i < 2; i++)
+    //     {
+    //         getline(infile, s1[i]);
+    //         // cout << endl;
+    //     }
+    // }
+    for (int i = 0; i < 2; i++)
+    {
+        if (!getline(infile, s1[i]))
+        {
+            cout << "Error: Unable to read line " << i + 1 << "." << endl;
+            infile.close();
+            return;
+        }
+    }
+    infile.close();
 }
 void Authentication::setPassword()
 {
     cout << "Enter your username: ";
     cin.ignore();
-    getline(cin, username);
+    cin.getline(username, 30);
     cout << "Enter your password: ";
-    cin.ignore();
-    getline(cin, password);
+    cin.getline(password, 30);
+    // saveToFile();
 }
 
 class Book
@@ -38,6 +84,7 @@ protected:
     string title;
     string author;
     bool isAvailable;
+    int noOfCopies;
 
 public:
     void addBook(int);
@@ -73,7 +120,7 @@ class Student : virtual public User
 public:
     // void viewBooks();
 };
-class Librarian : virtual public User
+class Librarian : virtual public User, virtual public Book
 {
 protected:
     Book books[MAXBOOKS];
@@ -82,6 +129,8 @@ protected:
     int memCount;
 
 public:
+    void setterBook();
+    void getterBook();
     void addBook();
     void appBook();
     // void updateBook();
@@ -98,6 +147,9 @@ public:
         return bookCount;
     }
 };
+void Librarian::setterBook()
+{
+}
 void Book::displayBooks()
 {
     cout << "Book Id: " << bookId << " - " << "Book Name: " << title << " - " << "Author: " << author << endl;
@@ -264,10 +316,41 @@ int Librarian::searchBook(int &id, int &nn)
     }
     return s;
 }
+void saveUsers(Authentication *pp[], int userCount)
+{
+    ofstream outfile;
+    outfile.open("userdetails.DAT", ios::out | ios::binary);
+    if (!outfile)
+    {
+        cout << "Error while opening the file. " << endl;
+    }
+    outfile.write(reinterpret_cast<char *>(&userCount), sizeof(int));
+    for (int i = 0; i < userCount; i++)
+    {
+        outfile.write(reinterpret_cast<char *>(pp[i]), sizeof(Authentication));
+    }
+    outfile.close();
+}
+void readUsers(Authentication *pp[], int &userCount)
+{
+    ifstream infile;
+    infile.open("userdetails.DAT", ios::in | ios::binary);
+    if (!infile)
+    {
+        cout << "Error while opening the file. " << endl;
+    }
+    infile.read(reinterpret_cast<char *>(&userCount), sizeof(int));
+    for (int i = 0; i < userCount; i++)
+    {
+        pp[i] = new Authentication;
+        infile.read(reinterpret_cast<char *>(pp[i]), sizeof(Authentication));
+    }
+    infile.close();
+}
 int main()
 {
     Librarian library;
-    Authentication *aptr[2];
+    Authentication *aptr[3];
     int userCount = 0;
     int ch;
     do
@@ -277,14 +360,16 @@ int main()
              << "2. Login" << endl
              << "3. Search a Book" << endl
              << "4. Display Books" << endl
-             << "5. Exit" << endl
+             << "5. Save Users Data" << endl
+             << "6. Read Users Data" << endl
+             << "7. Exit" << endl
              << "Enter your choice: ";
         cin >> ch;
         switch (ch)
         {
         case 1:
         {
-            if (userCount < 2)
+            if (userCount < 3)
             {
                 aptr[userCount] = new Authentication;
                 aptr[userCount]->setPassword();
@@ -302,6 +387,8 @@ int main()
             cout << "Enter your user id: ";
             cin.ignore();
             getline(cin, id);
+            // string s1[2];
+            // Authentication::readFromFile(string s1[2]);
             for (int i = 0; i < userCount; i++)
             {
                 if (aptr[i]->getUserName() == id)
@@ -312,7 +399,7 @@ int main()
                         cout << "Enter your password: ";
                         cin.ignore();
                         getline(cin, pass);
-                        if (pass == aptr[i]->getPassWord())
+                        if (aptr[i]->getPassWord() == pass)
                         {
                             cout << "You sucessfully login. " << endl;
                             cout << "---- LMS ------" << endl
@@ -359,8 +446,17 @@ int main()
         }
         break;
         case 5:
+        {
+            saveUsers(aptr, userCount);
+        }
+        break;
+        case 6:
+        {
+            readUsers(aptr, userCount);
+        }
+        break;
+        case 7:
             break;
         }
-    } while (ch != 5);
+    } while (ch != 7);
 }
-
