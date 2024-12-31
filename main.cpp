@@ -1,11 +1,15 @@
+// Library Managment System
+// Group Name: Prime Coders
+// Programming Tier: Tier - 2
+// Programming Approach: Object - Oriented Programming
+// Date: 31-Dec-2024
+// **************************
 #include <iostream>
-#include <string>
 #include <typeinfo>
 #include <fstream>
+#include <iomanip>
 #define MAXBOOKS 100
-#define MAX_MEMBERS 50
 using namespace std;
-
 class Authentication
 {
 protected:
@@ -13,16 +17,64 @@ protected:
     char password[30];
 
 public:
+    // ctor
+    Authentication(const char username[] = "", const char password[] = "") {}
     virtual void setCredentials();
-    string getUserName()
-    {
-        return username;
-    }
-    string getPassWord()
-    {
-        return password;
-    }
+    string getUserName();
+    string getPassWord();
 };
+class Library
+{
+protected:
+    char name[30];
+
+public:
+    // ctor
+    Library(const char name[] = " ") {}
+    virtual void setter();
+    virtual void getter();
+};
+class Book : public Library
+{
+protected:
+    unsigned int bookId;
+    char title[30];
+    char author[30];
+    bool isAvailable;
+
+public:
+    // ctor
+    Book(const char n[] = " ", unsigned int bId = 0, const char t[] = " ", const char a[] = " ", bool isA = false) : Library(n), bookId(bId), isAvailable(isA) {}
+    void setter();
+    void getter();
+    unsigned int getBookId();
+    bool getIsBookAvailable();
+    void setIsBookAvailable(bool);
+};
+class Member : public Library
+{
+protected:
+    unsigned int memberId;
+    char regNo[25];
+
+public:
+    // ctor
+    Member(const char n[] = " ", unsigned int mId = 0, const char rNo[] = " ") : Library(n), memberId(mId) {}
+    void setter();
+    void getter();
+    unsigned int getMemberId();
+};
+// Member Function definitions of class Authentication
+
+string Authentication::getUserName()
+{
+    return username;
+} // end of string Authentication::getUserName() function
+
+string Authentication::getPassWord()
+{
+    return password;
+} // end of string Authentication::getPassWord() function
 
 void Authentication::setCredentials()
 {
@@ -31,46 +83,25 @@ void Authentication::setCredentials()
     cin.getline(username, 30);
     cout << "Enter your password: ";
     cin.getline(password, 30);
-    // saveToFile();
-}
-class Library
-{
-protected:
-    char name[30];
+} // end of void Authentication::setCredentials() function
 
-public:
-    virtual void setter();
-    virtual void getter();
-};
-class Member : public Library
-{
-protected:
-    int memberId;
-    int regNo;
+// Member Function definitions of class Book
 
-public:
-    void setter();
-    void getter();
-    int getMemberId();
-};
-class Book : public Library
+unsigned int Book::getBookId()
 {
-protected:
-    unsigned int bookId;
-    char title[30];
-    char author[30];
-    // bool isAvailable;
-    // int noOfCopies;
+    return bookId;
+} // end of unsigned int Book::getBookId() function
 
-public:
-    void setter();
-    void getter();
-    void searchBook(Library *lib[], int tCount);
-    unsigned int getBookId()
-    {
-        return bookId;
-    }
-};
+void Book::setIsBookAvailable(bool bb)
+{
+    isAvailable = bb;
+} // end of void Book::setIsBookAvailable(bool bb) function
+
+bool Book::getIsBookAvailable()
+{
+    return isAvailable;
+} // end of bool Book::getIsBookAvailable() function
+
 void Book::setter()
 {
     cout << "Enter book id: ";
@@ -80,37 +111,52 @@ void Book::setter()
     cin.getline(title, 30);
     cout << "Enter the author name: ";
     cin.getline(author, 30);
-}
+    cout << "Is the book available ? [1 - YES, 0 - NO]: ";
+    cin >> isAvailable;
+} // end of void Book::setter() function
+
 void Book::getter()
 {
-    cout << "Book Id: " << bookId << " - " << "Book Name: " << title << " - " << "Author: " << author << endl;
-}
+    cout << left << setw(13) << bookId << setw(30) << title << setw(30) << author << setw(9) << isAvailable << endl;
+} // end of void Book::getter() function
+
+// Member Function Definitions of Class Library
+
 void Library::setter()
 {
     cout << "Enter your name: ";
     cin.ignore();
     cin.getline(name, 30);
-}
+} // end of void Library::setter() function
+
 void Library::getter()
 {
-    cout << "Name: " << name << endl;
-}
+    cout << left << setw(20) << name;
+} // end of void Library::getter() function
+
+// Member function definitions of Member Class
 
 void Member::setter()
 {
     Library::setter();
-    cout << "Enter your member id: ";
+    cout << "Enter the member id: ";
     cin >> memberId;
-}
+    cout << "Enter the registration number: ";
+    cin.ignore();
+    cin.getline(regNo, 25);
+} // end of void Member::setter() function
+
 void Member::getter()
 {
     Library::getter();
-    cout << "Member Id: " << memberId << endl;
-}
-int Member::getMemberId()
+    cout << left << setw(13) << memberId << setw(25) << regNo << endl;
+} // end of void Member::getter() function
+
+unsigned int Member::getMemberId()
 {
     return memberId;
-}
+} // end of unsigned int Member::getMemberId() function
+
 void saveUsers(Authentication *pp[], int userCount, int totalCount)
 {
     ofstream outfile;
@@ -126,7 +172,8 @@ void saveUsers(Authentication *pp[], int userCount, int totalCount)
         outfile.write(reinterpret_cast<char *>(pp[i]), sizeof(Authentication));
     }
     outfile.close();
-}
+} // end of void saveUsers(Authentication *pp[], int userCount, int totalCount) function
+
 void readUsers(Authentication *pp[], int &userCount, int &totalCount)
 {
     ifstream infile;
@@ -144,7 +191,8 @@ void readUsers(Authentication *pp[], int &userCount, int &totalCount)
         infile.read(reinterpret_cast<char *>(pp[i]), sizeof(Authentication));
     }
     infile.close();
-}
+} // end of void readUsers(Authentication *pp[], int &userCount, int &totalCount) function
+
 void saveBooks(Library *lib[], int tCount, int bCount)
 {
     ofstream outfile;
@@ -159,11 +207,12 @@ void saveBooks(Library *lib[], int tCount, int bCount)
         if (typeid(*lib[i]) == typeid(Book))
         {
             outfile.write(reinterpret_cast<char *>(lib[i]), sizeof(Book));
-            lib[i]->getter();
+            // lib[i]->getter();
         }
     }
     outfile.close();
-}
+} // end of void saveBooks(Library *lib[], int tCount, int bCount) function
+
 void readBooks(Library *lib[], int &bCount)
 {
     ifstream infile;
@@ -181,7 +230,8 @@ void readBooks(Library *lib[], int &bCount)
         // lib[j]->getter();
     }
     infile.close();
-}
+} // end of void readBooks(Library *lib[], int &bCount) function
+
 void saveMembers(Library *lib[], int mCount, int tCount)
 {
     ofstream outfile;
@@ -201,7 +251,8 @@ void saveMembers(Library *lib[], int mCount, int tCount)
         // cout << "nice " << endl;
     }
     outfile.close();
-}
+} // end of void saveMembers(Library *lib[], int mCount, int tCount) function
+
 void readMembers(Library *lib[], int &mCount)
 {
     ifstream infile;
@@ -218,12 +269,24 @@ void readMembers(Library *lib[], int &mCount)
         // cout << "hi!" << endl;
     }
     infile.close();
-}
+} // end of void readMembers(Library *lib[], int &mCount) function
+
+// Report Struct Declaration
+// To generate reports of returning and borrowing
+struct Report
+{
+    int memberID;
+    int bookID;
+};
+
+// Main Function
 int main()
 {
     Library *lptr[100];
     Authentication *aptr[3];
     int userCount = 0;
+    Report rep[10];
+    int repCount = 0;
     int totalCount = 0;
     int bookCount = 0;
     int memberCount = 0;
@@ -233,11 +296,9 @@ int main()
         cout << "----- Library Management System -------- " << endl
              << "1. Create Account (Only for Librarian)" << endl
              << "2. Login as Librarian" << endl
-             << "4. Search a book" << endl
-             << "5. Display all Books" << endl
-             << "6. Save Users Data" << endl
-             << "7. Read Users Data" << endl
-             << "8. Exit" << endl
+             << "3. Save Users Data" << endl
+             << "4. Read Users Data" << endl
+             << "5. Exit" << endl
              << "Enter your choice: ";
         cin >> chh;
         switch (chh)
@@ -259,7 +320,7 @@ int main()
         case 2:
         {
             string id, pass;
-            cout << "Enter your user id: ";
+            cout << "Enter the username: ";
             cin.ignore();
             getline(cin, id);
             for (int i = 0; i < userCount; i++)
@@ -269,7 +330,7 @@ int main()
                     int j = 0;
                     while (j < 3)
                     {
-                        cout << "Enter your password: ";
+                        cout << "Enter the password: ";
                         cin.ignore();
                         getline(cin, pass);
                         if (aptr[i]->getPassWord() == pass)
@@ -279,17 +340,23 @@ int main()
                             do
                             {
                                 char choice;
-                                cout << "---- LMS ------" << endl
+                                cout << "------------ LMS - Librarian Menu ---------------" << endl;
+                                cout << "------- Book Menu ------" << endl
                                      << "1. Add a Book" << endl
                                      << "2. Search a Book" << endl
                                      << "3. Update Book Details" << endl
                                      << "4. Delete a Book" << endl
                                      << "5. Display Books" << endl
+                                     << "------- Member Menu ------" << endl
                                      << "6. Add a Member" << endl
                                      << "7. Search a Member" << endl
                                      << "8. Delete a Member" << endl
                                      << "9. Display Members" << endl
-                                     << "10. Go back" << endl
+                                     << "------- Borrow and Return Menu ------" << endl
+                                     << "10. Borrow a book to member" << endl
+                                     << "11. Return a Book from member" << endl
+                                     << "12. Generate Reports" << endl
+                                     << "13. Logout" << endl
                                      << "Enter your choice: ";
                                 cin >> ch;
                                 switch (ch)
@@ -309,10 +376,12 @@ int main()
                                             break;
                                     } while (true);
                                     break;
-                                }
+                                } // end of Case 1
+
                                 case 2:
                                 {
                                     unsigned int idToSearch;
+                                    bool flag = true;
                                     cout << "Enter the Book ID to search: ";
                                     cin >> idToSearch;
 
@@ -323,18 +392,22 @@ int main()
                                             Book *book = static_cast<Book *>(lptr[i]);
                                             if (book->getBookId() == idToSearch)
                                             {
+                                                flag = false;
                                                 cout << "Book Found!" << endl;
                                                 book->getter();
-                                                // return;
+                                                break;
                                             }
                                         }
                                     }
-                                    // cout << "Book with ID " << idToSearch << " not found." << endl;
+                                    if (flag)
+                                        cout << "Book with ID " << idToSearch << " not found." << endl;
                                     break;
-                                }
+                                } // end of Case 2
+
                                 case 3:
                                 {
                                     unsigned int idToUpdate;
+                                    bool flag = true;
                                     cout << "Enter the Book ID to update: ";
                                     cin >> idToUpdate;
 
@@ -345,6 +418,7 @@ int main()
                                             Book *book = static_cast<Book *>(lptr[i]);
                                             if (book->getBookId() == idToUpdate)
                                             {
+                                                flag = false;
                                                 cout << "Current Book Details:" << endl;
                                                 book->getter();
                                                 cout << "Enter new details for the book:" << endl;
@@ -353,12 +427,15 @@ int main()
                                             }
                                         }
                                     }
-                                    // cout << "Book with ID " << idToUpdate << " not found." << endl;
+                                    if (flag)
+                                        cout << "Book with ID " << idToUpdate << " not found." << endl;
                                     break;
-                                }
+                                } // end of Case 3
+
                                 case 4:
                                 {
                                     unsigned int idToDelete;
+                                    bool flag = true;
                                     cout << "Enter the Book ID to delete: ";
                                     cin >> idToDelete;
 
@@ -369,34 +446,41 @@ int main()
                                             Book *book = static_cast<Book *>(lptr[i]);
                                             if (book->getBookId() == idToDelete)
                                             {
-                                                delete lptr[i]; // Free memory
+                                                delete lptr[i];
                                                 for (int j = i; j < totalCount - 1; j++)
                                                 {
-                                                    lptr[j] = lptr[j + 1]; // Shift elements
+                                                    lptr[j] = lptr[j + 1];
                                                 }
-                                                lptr[totalCount - 1] = nullptr; // Clear last pointer
+                                                lptr[totalCount - 1] = nullptr;
                                                 totalCount--;
                                                 bookCount--;
                                                 cout << "Book deleted successfully!" << endl;
-                                                // return;
+                                                break;
                                             }
                                         }
                                     }
-                                    // cout << "Book with ID " << idToDelete << " not found." << endl;
+                                    if (flag)
+                                        cout << "Book with ID " << idToDelete << " not found." << endl;
                                     break;
-                                }
+                                } // end of Case 4
+
                                 case 5:
                                 {
+                                    cout << "*********************************************************************************" << endl;
+                                    cout << left << setw(13) << "Book Id" << setw(30) << "Book Name" << setw(30) << "Author" << setw(9) << "Available " << endl;
+                                    cout << "*********************************************************************************" << endl;
                                     for (int n = 0; n < totalCount; n++)
                                     {
                                         if (typeid(*lptr[n]) == typeid(Book))
                                         {
                                             lptr[n]->getter();
-                                            cout << "****" << endl;
                                         }
                                     }
+
+                                    cout << "*********************************************************************************" << endl;
                                     break;
-                                }
+                                } // end of Case 5
+
                                 case 6:
                                 {
                                     do
@@ -413,7 +497,8 @@ int main()
                                             break;
                                     } while (true);
                                     break;
-                                }
+                                } // end of Case 6
+
                                 case 7:
                                 {
                                     unsigned int idToSearch;
@@ -429,12 +514,13 @@ int main()
                                             {
                                                 cout << "Member Found!" << endl;
                                                 member->getter();
-                                                // return;
+                                                break;
                                             }
                                         }
                                     }
                                     break;
-                                }
+                                } // end of Case 7
+
                                 case 8:
                                 {
                                     unsigned int idToDelete;
@@ -448,37 +534,147 @@ int main()
                                             Member *member = static_cast<Member *>(lptr[i]);
                                             if (member->getMemberId() == idToDelete)
                                             {
-                                                delete lptr[i]; // Free memory
+                                                delete lptr[i];
                                                 for (int j = i; j < totalCount - 1; j++)
                                                 {
-                                                    lptr[j] = lptr[j + 1]; // Shift elements
+                                                    lptr[j] = lptr[j + 1];
                                                 }
-                                                lptr[totalCount - 1] = nullptr; // Clear last pointer
+                                                lptr[totalCount - 1] = nullptr;
                                                 totalCount--;
                                                 memberCount--;
-                                                cout << "member deleted successfully!" << endl;
+                                                cout << "Member deleted successfully!" << endl;
                                                 // return;
                                             }
                                         }
                                     }
                                     break;
-                                }
+                                } // end of Case 8
+
                                 case 9:
                                 {
+                                    cout << "*********************************************************" << endl;
+                                    cout << left << setw(20) << "Name" << setw(13) << "Member ID" << setw(25) << "Reg No" << endl;
+                                    cout << "*********************************************************" << endl;
                                     for (int m = 0; m < totalCount; m++)
                                     {
                                         if (typeid(*lptr[m]) == typeid(Member))
                                         {
                                             lptr[m]->getter();
-                                            cout << "****" << endl;
                                         }
                                     }
+                                    cout << "*********************************************************" << endl;
                                     break;
-                                }
+                                } // end of Case 9
+
                                 case 10:
+                                {
+                                    int memId, bookId;
+                                    cout << "Enter the member id to which you give a book: ";
+                                    cin >> memId;
+                                    cout << "Enter the book id: ";
+                                    cin >> bookId;
+
+                                    bool bookFound = false, memberFound = false;
+                                    for (int j = 0; j < totalCount; j++)
+                                    {
+                                        if (typeid(*lptr[j]) == typeid(Book))
+                                        {
+                                            Book *book = static_cast<Book *>(lptr[j]);
+                                            if (book->getBookId() == bookId)
+                                            {
+                                                bookFound = true;
+                                                if (book->getIsBookAvailable())
+                                                {
+                                                    book->setIsBookAvailable(false);
+                                                    rep[repCount].bookID = bookId;
+                                                    rep[repCount].memberID = memId;
+                                                    repCount++;
+                                                    cout << "Book given successfully." << endl;
+                                                }
+                                                else
+                                                {
+                                                    cout << "Book is already borrowed." << endl;
+                                                }
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    if (!bookFound)
+                                        cout << "Book not found!" << endl;
+
                                     break;
-                                }
-                            } while (ch != 10);
+                                } // end of Case 10
+
+                                case 11:
+                                {
+                                    int memId, bookId;
+                                    cout << "Enter the member id who is returning a book: ";
+                                    cin >> memId;
+                                    cout << "Enter the book id: ";
+                                    cin >> bookId;
+
+                                    bool bookFound = false, memberFound = false;
+                                    for (int j = 0; j < totalCount; j++)
+                                    {
+                                        if (typeid(*lptr[j]) == typeid(Book))
+                                        {
+                                            Book *book = static_cast<Book *>(lptr[j]);
+                                            if (book->getBookId() == bookId)
+                                            {
+                                                bookFound = true;
+                                                if (!book->getIsBookAvailable())
+                                                {
+                                                    book->setIsBookAvailable(true);
+                                                    cout << "Book returned successfully." << endl;
+
+                                                    // Remove from report
+                                                    for (int k = 0; k < repCount; k++)
+                                                    {
+                                                        if (rep[k].bookID == bookId && rep[k].memberID == memId)
+                                                        {
+                                                            for (int m = k; m < repCount - 1; m++)
+                                                            {
+                                                                rep[m] = rep[m + 1];
+                                                            }
+                                                            repCount--; // Decrement report count
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    cout << "Book was not borrowed." << endl;
+                                                }
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    if (!bookFound)
+                                        cout << "Book not found!" << endl;
+
+                                    break;
+                                } // end of Case 11
+
+                                case 12:
+                                {
+                                    cout << "***********************" << endl;
+                                    cout << left << setw(12) << "Mem Id" << setw(12) << "Book Id" << endl;
+                                    cout << "***********************" << endl;
+                                    for (int j = 0; j < repCount; j++)
+                                    {
+                                        cout << left << setw(12) << rep[j].bookID << setw(12) << rep[j].memberID << endl;
+                                    }
+                                    cout << "***********************" << endl;
+                                    break;
+                                } // end of Case 12
+
+                                case 13:
+                                    break;
+                                } // end of Case 13
+                                // end of Nested Switch
+                            } while (ch != 13);
                             break;
                         }
                         else
@@ -500,39 +696,6 @@ int main()
         }
         case 3:
         {
-            string id, pass;
-            cout << "Enter your member id: ";
-            cin.ignore();
-            getline(cin, id);
-            for (int i = 0; i < userCount; i++)
-            {
-                if (aptr[i]->getUserName() == id)
-                {
-                    cout << "Enter your password: ";
-                    cin.ignore();
-                    getline(cin, pass);
-                    if (aptr[i]->getPassWord() == pass)
-                    {
-                        cout << "You sucessfully login. " << endl;
-                    }
-                }
-            }
-            break;
-        }
-        case 5:
-        {
-            for (int i = 0; i < totalCount; i++)
-            {
-                if (typeid(*lptr[i]) == typeid(Book))
-                {
-                    lptr[i]->getter();
-                    cout << "******" << endl;
-                }
-            }
-            break;
-        }
-        case 6:
-        {
             saveUsers(aptr, userCount, totalCount);
             saveBooks(lptr, totalCount, bookCount);
             saveMembers(lptr, memberCount, totalCount);
@@ -540,7 +703,9 @@ int main()
             cout << "Data saved sucessfully. " << endl;
             break;
         }
-        case 7:
+            // end of Case 3
+
+        case 4:
         {
             readUsers(aptr, userCount, totalCount);
             readBooks(lptr, bookCount);
@@ -549,7 +714,9 @@ int main()
             cout << "Data read sucessfully. " << endl;
             break;
         }
-        case 8:
+            // end of Case 4
+
+        case 5:
         {
             for (int i = 0; i < totalCount; i++)
             {
@@ -557,6 +724,11 @@ int main()
             }
             break;
         }
-        }
-    } while (chh != 8);
-}
+            // end of Case 5
+
+        } // end of Switch
+    } while (chh != 5);
+
+    system("pause");
+    return 0;
+} // end of main function
