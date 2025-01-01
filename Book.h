@@ -1,15 +1,18 @@
-#include<iostream>
-using namespace std;
-class Book
+#include "Library.h"
+class Book : public Library
 {
 protected:
     unsigned int bookId;
-    string title;
-    string author;
+    char title[30];
+    char author[30];
     bool isAvailable;
 
 public:
-    void addBook(int);
-    void displayBooks();
-    int getBookId();
+    // ctor
+    Book(const char n[] = " ", unsigned int bId = 0, const char t[] = " ", const char a[] = " ", bool isA = false) : Library(n), bookId(bId), isAvailable(isA) {}
+    void setter();
+    void getter();
+    unsigned int getBookId();
+    bool getIsBookAvailable();
+    void setIsBookAvailable(bool);
 };
