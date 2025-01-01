@@ -1,14 +1,16 @@
-#include "User.h"
-#include "Librarian.h"
-class Member : virtual public User, Librarian
+#pragma once
+#include"Library.h"
+
+class Member : public Library
 {
 protected:
-    int memberId;
+    unsigned int memberId;
+    char regNo[25];
 
 public:
-    void addMem(int);
-    void dispMem();
-    void getMemId(){
-        return memberId;
-    }
+    // ctor
+    Member(const char n[] = " ", unsigned int mId = 0, const char rNo[] = " ") : Library(n), memberId(mId) {}
+    void setter();
+    void getter();
+    unsigned int getMemberId();
 };
