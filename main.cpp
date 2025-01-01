@@ -1,69 +1,31 @@
 // Library Managment System
-// Group Name: Prime Coders
 // Programming Tier: Tier - 2
 // Programming Approach: Object - Oriented Programming
-// Date: 31-Dec-2024
+// Programmer: Ahmed Nasir
+// Date: 1-Jan-2025
 // **************************
 #include <iostream>
 #include <typeinfo>
 #include <fstream>
 #include <iomanip>
-#define MAXBOOKS 100
+
+// user-defined header files
+#include "Authentication.h"
+#include "Member.h"
+#include "Book.h"
+
+#define MAX 100
+#define MAX_ADMIN 3
+#define isValidNum(min, max, val) ((val >= min) && (val <= max))
 using namespace std;
-class Authentication
+// Report Struct Declaration
+// To generate reports of returning and borrowing books
+struct Report
 {
-protected:
-    char username[30];
-    char password[30];
-
-public:
-    // ctor
-    Authentication(const char username[] = "", const char password[] = "") {}
-    virtual void setCredentials();
-    string getUserName();
-    string getPassWord();
+    int memberID;
+    int bookID;
 };
-class Library
-{
-protected:
-    char name[30];
 
-public:
-    // ctor
-    Library(const char name[] = " ") {}
-    virtual void setter();
-    virtual void getter();
-};
-class Book : public Library
-{
-protected:
-    unsigned int bookId;
-    char title[30];
-    char author[30];
-    bool isAvailable;
-
-public:
-    // ctor
-    Book(const char n[] = " ", unsigned int bId = 0, const char t[] = " ", const char a[] = " ", bool isA = false) : Library(n), bookId(bId), isAvailable(isA) {}
-    void setter();
-    void getter();
-    unsigned int getBookId();
-    bool getIsBookAvailable();
-    void setIsBookAvailable(bool);
-};
-class Member : public Library
-{
-protected:
-    unsigned int memberId;
-    char regNo[25];
-
-public:
-    // ctor
-    Member(const char n[] = " ", unsigned int mId = 0, const char rNo[] = " ") : Library(n), memberId(mId) {}
-    void setter();
-    void getter();
-    unsigned int getMemberId();
-};
 // Member Function definitions of class Authentication
 
 string Authentication::getUserName()
@@ -104,8 +66,15 @@ bool Book::getIsBookAvailable()
 
 void Book::setter()
 {
-    cout << "Enter book id: ";
-    cin >> bookId;
+    do
+    {
+        cout << "Enter the book Id: ";
+        cin >> bookId;
+        if (isValidNum(10, 99, bookId))
+            break;
+        else
+            cout << "Invalid Number. Please add two digit number." << endl;
+    } while (true);
     cout << "Enter the title of book: ";
     cin.ignore();
     cin.getline(title, 30);
@@ -139,8 +108,15 @@ void Library::getter()
 void Member::setter()
 {
     Library::setter();
-    cout << "Enter the member id: ";
-    cin >> memberId;
+    do
+    {
+        cout << "Enter the member id: ";
+        cin >> memberId;
+        if (isValidNum(10, 99, memberId))
+            break;
+        else
+            cout << "Invalid Number. Please add two digit number." << endl;
+    } while (true);
     cout << "Enter the registration number: ";
     cin.ignore();
     cin.getline(regNo, 25);
@@ -174,6 +150,38 @@ void saveUsers(Authentication *pp[], int userCount, int totalCount)
     outfile.close();
 } // end of void saveUsers(Authentication *pp[], int userCount, int totalCount) function
 
+void saveReports(Report repp[], int rCount)
+{
+    ofstream outfile;
+    outfile.open("reportdetails.DAT", ios::out | ios::binary);
+    if (!outfile)
+    {
+        cout << "Error while opening the file. " << endl;
+    }
+    outfile.write(reinterpret_cast<char *>(&rCount), sizeof(int));
+    for (int i = 0; i < rCount; i++)
+    {
+        outfile.write(reinterpret_cast<char *>(&repp[i]), sizeof(Report));
+    }
+    outfile.close();
+} // end of void saveReports(Report repp[], int rCount) function
+
+void readReports(Report repp[], int &rCount)
+{
+    ifstream infile;
+    infile.open("reportdetails.DAT", ios::in | ios::binary);
+    if (!infile)
+    {
+        cout << "Error while opening the file. " << endl;
+    }
+    infile.read(reinterpret_cast<char *>(&rCount), sizeof(int));
+    for (int i = 0; i < rCount; i++)
+    {
+        infile.read(reinterpret_cast<char *>(&repp[i]), sizeof(Report));
+    }
+    infile.close();
+} // end of void readReports(Report repp[], int &rCount) function
+
 void readUsers(Authentication *pp[], int &userCount, int &totalCount)
 {
     ifstream infile;
@@ -184,7 +192,6 @@ void readUsers(Authentication *pp[], int &userCount, int &totalCount)
     }
     infile.read(reinterpret_cast<char *>(&userCount), sizeof(int));
     infile.read(reinterpret_cast<char *>(&totalCount), sizeof(int));
-    // cout << "Total Count: " << totalCount << ", Book Count: " << userCount << endl;
     for (int i = 0; i < userCount; i++)
     {
         pp[i] = new Authentication;
@@ -207,7 +214,6 @@ void saveBooks(Library *lib[], int tCount, int bCount)
         if (typeid(*lib[i]) == typeid(Book))
         {
             outfile.write(reinterpret_cast<char *>(lib[i]), sizeof(Book));
-            // lib[i]->getter();
         }
     }
     outfile.close();
@@ -222,12 +228,10 @@ void readBooks(Library *lib[], int &bCount)
         cout << "Error while opening the file. " << endl;
     }
     infile.read(reinterpret_cast<char *>(&bCount), sizeof(int));
-    // cout << " (rB) Book Count: " << bCount << endl;
     for (int j = 0; j < bCount; j++)
     {
         lib[j] = new Book;
         infile.read(reinterpret_cast<char *>(lib[j]), sizeof(Book));
-        // lib[j]->getter();
     }
     infile.close();
 } // end of void readBooks(Library *lib[], int &bCount) function
@@ -246,9 +250,7 @@ void saveMembers(Library *lib[], int mCount, int tCount)
         if (typeid(*lib[k]) == typeid(Member))
         {
             outfile.write(reinterpret_cast<char *>(lib[k]), sizeof(Member));
-            // cout << "hello" << endl;
         }
-        // cout << "nice " << endl;
     }
     outfile.close();
 } // end of void saveMembers(Library *lib[], int mCount, int tCount) function
@@ -266,24 +268,15 @@ void readMembers(Library *lib[], int &mCount)
     {
         lib[i] = new Member;
         infile.read(reinterpret_cast<char *>(lib[i]), sizeof(Member));
-        // cout << "hi!" << endl;
     }
     infile.close();
 } // end of void readMembers(Library *lib[], int &mCount) function
 
-// Report Struct Declaration
-// To generate reports of returning and borrowing
-struct Report
-{
-    int memberID;
-    int bookID;
-};
-
 // Main Function
 int main()
 {
-    Library *lptr[100];
-    Authentication *aptr[3];
+    Library *lptr[MAX];
+    Authentication *aptr[MAX_ADMIN];
     int userCount = 0;
     Report rep[10];
     int repCount = 0;
@@ -305,11 +298,12 @@ int main()
         {
         case 1:
         {
-            if (userCount < 3)
+            if (userCount < MAX_ADMIN)
             {
                 aptr[userCount] = new Authentication;
                 aptr[userCount]->setCredentials();
                 userCount++;
+                cout << "User added. " << endl;
             }
             else
             {
@@ -320,6 +314,9 @@ int main()
         case 2:
         {
             string id, pass;
+            int attempt = 0;
+            bool flagAttempt = true;
+            int ch;
             cout << "Enter the username: ";
             cin.ignore();
             getline(cin, id);
@@ -327,8 +324,7 @@ int main()
             {
                 if (aptr[i]->getUserName() == id)
                 {
-                    int j = 0;
-                    while (j < 3)
+                    while (attempt < 3)
                     {
                         cout << "Enter the password: ";
                         cin.ignore();
@@ -336,7 +332,7 @@ int main()
                         if (aptr[i]->getPassWord() == pass)
                         {
                             cout << "You sucessfully login. " << endl;
-                            int ch;
+                            flagAttempt = false;
                             do
                             {
                                 char choice;
@@ -681,9 +677,10 @@ int main()
                         {
                             cout << "Password not match. " << endl;
                         }
-                        j++;
+                        attempt++;
                     }
-                    // exit(1);
+                    if (flagAttempt)
+                        exit(1);
                     break;
                 }
                 else
@@ -699,7 +696,7 @@ int main()
             saveUsers(aptr, userCount, totalCount);
             saveBooks(lptr, totalCount, bookCount);
             saveMembers(lptr, memberCount, totalCount);
-            // cout << "Total Count: " << totalCount << ", Book Count: " << bookCount << endl;
+            saveReports(rep, repCount);
             cout << "Data saved sucessfully. " << endl;
             break;
         }
@@ -710,11 +707,10 @@ int main()
             readUsers(aptr, userCount, totalCount);
             readBooks(lptr, bookCount);
             readMembers(lptr, memberCount);
-            // cout << "Total Count: " << totalCount << ", Book Count: " << bookCount << endl;
+            readReports(rep, repCount);
             cout << "Data read sucessfully. " << endl;
             break;
-        }
-            // end of Case 4
+        } // end of Case 4
 
         case 5:
         {
@@ -723,8 +719,7 @@ int main()
                 delete lptr[i];
             }
             break;
-        }
-            // end of Case 5
+        } // end of Case 5
 
         } // end of Switch
     } while (chh != 5);
